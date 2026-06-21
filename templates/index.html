@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quattro Sales Copilot</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:#0a0e1a;color:#e0e7ef;min-height:100vh;overflow-x:hidden}
+.container{max-width:960px;margin:0 auto;padding:40px 24px}
+
+/* Header */
+.header{text-align:center;margin-bottom:48px}
+.header h1{font-size:2.4em;background:linear-gradient(135deg,#4D9FFF,#00D4AA);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
+.header p{color:#8899aa;font-size:1.1em}
+
+/* Stepper */
+.stepper{display:flex;justify-content:center;gap:8px;margin-bottom:40px}
+.step-dot{width:40px;height:4px;border-radius:2px;background:#1e2640;transition:all .3s}
+.step-dot.active{background:linear-gradient(90deg,#4D9FFF,#00D4AA);width:60px}
+.step-dot.done{background:#00D4AA}
+
+/* Form Card */
+.form-card{background:#111827;border:1px solid #1e2640;border-radius:16px;padding:48px;max-width:560px;margin:0 auto;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.form-card h2{font-size:1.5em;margin-bottom:8px;color:#fff}
+.form-card .subtitle{color:#667;margin-bottom:32px;font-size:.95em}
+
+/* Options */
+.options{display:grid;gap:12px}
+.option{display:flex;align-items:center;gap:16px;padding:18px 20px;background:#0d1220;border:1.5px solid #1e2640;border-radius:12px;cursor:pointer;transition:all .2s}
+.option:hover{border-color:#4D9FFF;background:#0f1628}
+.option.selected{border-color:#00D4AA;background:#0a1a1f;box-shadow:0 0 20px rgba(0,212,170,.08)}
+.option .icon{font-size:1.8em;width:48px;text-align:center}
+.option .label{font-weight:600;font-size:1.05em}
+.option .desc{color:#667;font-size:.85em;margin-top:2px}
+
+/* Buttons */
+.btn-row{display:flex;justify-content:space-between;margin-top:32px}
+.btn{padding:12px 28px;border-radius:8px;font-size:1em;font-weight:600;border:none;cursor:pointer;transition:all .2s}
+.btn-primary{background:linear-gradient(135deg,#4D9FFF,#00D4AA);color:#000}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(77,159,255,.3)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-back{background:transparent;color:#667;border:1px solid #1e2640}
+.btn-back:hover{border-color:#4D9FFF;color:#4D9FFF}
+
+/* Result Panel */
+.result-panel{display:none;animation:fadeIn .5s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.result-panel.visible{display:block}
+.result-header{text-align:center;margin-bottom:40px}
+.result-header .icon-big{font-size:3em;margin-bottom:12px}
+.result-header h2{font-size:1.8em;margin-bottom:8px}
+.result-header .tagline{color:#8899aa;font-size:1.1em}
+.features-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:32px 0}
+@media(max-width:600px){.features-grid{grid-template-columns:1fr}}
+.feature-card{background:#111827;border:1px solid #1e2640;border-radius:10px;padding:16px 18px;display:flex;align-items:flex-start;gap:12px}
+.feature-card .check{color:#00D4AA;font-size:1.2em;margin-top:2px}
+.feature-card .text{font-size:.9em;line-height:1.4}
+.cta-section{text-align:center;margin-top:40px}
+.cta-btn{display:inline-block;padding:16px 40px;background:linear-gradient(135deg,#4D9FFF,#00D4AA);color:#000;font-size:1.1em;font-weight:700;border-radius:10px;text-decoration:none;transition:all .2s}
+.cta-btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(0,212,170,.25)}
+
+/* API Demo Section */
+.api-section{margin-top:48px;background:#111827;border:1px solid #1e2640;border-radius:12px;padding:24px}
+.api-section h3{margin-bottom:16px;color:#4D9FFF}
+.code-block{background:#0a0e1a;border-radius:8px;padding:16px;font-family:'JetBrains Mono',monospace;font-size:.82em;overflow-x:auto;color:#a0b0c0;line-height:1.6}
+.tabs{display:flex;gap:8px;margin-bottom:16px}
+.tab{padding:6px 14px;border-radius:6px;font-size:.85em;cursor:pointer;background:#0d1220;color:#667;border:1px solid #1e2640}
+.tab.active{background:#1e2640;color:#fff;border-color:#4D9FFF}
+
+/* Footer */
+.footer{text-align:center;margin-top:60px;color:#445;font-size:.85em}
+.footer a{color:#4D9FFF;text-decoration:none}
+</style>
+</head>
+<body>
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <h1>Quattro Sales Copilot</h1>
+    <p>AI-powered sales automation for every vertical</p>
+  </div>
+
+  <!-- Stepper -->
+  <div class="stepper">
+    <div class="step-dot active" id="dot1"></div>
+    <div class="step-dot" id="dot2"></div>
+    <div class="step-dot" id="dot3"></div>
+  </div>
+
+  <!-- Step 1: Mode -->
+  <div class="form-card" id="step1">
+    <h2>What do you sell?</h2>
+    <p class="subtitle">Select your business model to personalize your experience.</p>
+    <div class="options">
+      <div class="option" data-value="b2b" onclick="selectOption(this,'mode')">
+        <div class="icon">🏭</div>
+        <div><div class="label">B2B — Trading / Manufacturing</div>
+        <div class="desc">Export sales, OEM/ODM, trade shows, bulk orders</div></div>
+      </div>
+      <div class="option" data-value="b2c" onclick="selectOption(this,'mode')">
+        <div class="icon">👤</div>
+        <div><div class="label">B2C — Agent / Advisor</div>
+        <div class="desc">Insurance, property, financial advisory, direct sales</div></div>
+      </div>
+    </div>
+    <div class="btn-row"><div></div><button class="btn btn-primary" id="btn1" disabled onclick="nextStep(2)">Continue →</button></div>
+  </div>
+
+  <!-- Step 2: Channel -->
+  <div class="form-card" id="step2" style="display:none">
+    <h2>Your main outreach channel?</h2>
+    <p class="subtitle">We'll optimize workflows for your primary communication tool.</p>
+    <div class="options">
+      <div class="option" data-value="email" onclick="selectOption(this,'channel')">
+        <div class="icon">📧</div>
+        <div><div class="label">Email</div>
+        <div class="desc">Cold outreach, follow-ups, quote delivery</div></div>
+      </div>
+      <div class="option" data-value="whatsapp" onclick="selectOption(this,'channel')">
+        <div class="icon">💬</div>
+        <div><div class="label">WhatsApp / WeChat</div>
+        <div class="desc">Chat-based selling, screenshots, voice notes</div></div>
+      </div>
+    </div>
+    <div class="btn-row"><button class="btn btn-back" onclick="prevStep(1)">← Back</button><button class="btn btn-primary" id="btn2" disabled onclick="nextStep(3)">Continue →</button></div>
+  </div>
+
+  <!-- Step 3: Segment -->
+  <div class="form-card" id="step3" style="display:none">
+    <h2>Your product vertical?</h2>
+    <p class="subtitle">Final step — we'll customize your copilot for this market.</p>
+    <div class="options" id="segmentOptions"></div>
+    <div class="btn-row"><button class="btn btn-back" onclick="prevStep(2)">← Back</button><button class="btn btn-primary" id="btn3" disabled onclick="submitDiagnostic()">Launch My Copilot 🚀</button></div>
+  </div>
+
+  <!-- Result Panel -->
+  <div class="result-panel" id="resultPanel">
+    <div class="result-header">
+      <div class="icon-big" id="resIcon"></div>
+      <h2 id="resTitle"></h2>
+      <p class="tagline" id="resTagline"></p>
+    </div>
+    <div class="features-grid" id="resFeatures"></div>
+    <div class="cta-section">
+      <a class="cta-btn" id="resCta" href="#">Get Started</a>
+    </div>
+
+    <!-- API Demo -->
+    <div class="api-section">
+      <h3>📡 Cross-Platform Sync API</h3>
+      <div class="tabs">
+        <div class="tab active" onclick="showTab('upload')">Mobile Upload</div>
+        <div class="tab" onclick="showTab('download')">Desktop Sync</div>
+      </div>
+      <div class="code-block" id="codeUpload">
+<span style="color:#00D4AA">POST</span> /api/v1/sync/upload
+Content-Type: application/json
+
+{
+  "content": "Meeting notes from Canton Fair...",
+  "source": "mobile",
+  "content_type": "text",
+  "metadata": {"event": "Canton Fair 2026"}
+}
+
+<span style="color:#667">→ Response:</span>
+{
+  "ok": true,
+  "lead_id": "a3f9c2e1b4d7",
+  "message": "Buffered successfully."
+}</div>
+      <div class="code-block" id="codeDownload" style="display:none">
+<span style="color:#4D9FFF">GET</span> /api/v1/sync/download?clear=true
+
+<span style="color:#667">→ Desktop app fetches all buffered leads:</span>
+{
+  "ok": true,
+  "leads": [...],
+  "count": 12,
+  "message": "Synced 12 leads to local storage.",
+  "buffer_cleared": true
+}
+
+<span style="color:#667">// Data deleted from cloud after sync</span>
+<span style="color:#667">// Enforces Local-First Storage promise</span></div>
+    </div>
+
+    <div style="text-align:center;margin-top:24px">
+      <button class="btn btn-back" onclick="resetForm()">← Start Over</button>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>Powered by <a href="#">Quattro Dynamics</a> · AI Sales Automation</p>
+  </div>
+</div>
+
+<script>
+const state = { mode: null, channel: null, segment: null };
+
+const SEGMENTS = {
+  b2b: [
+    { value: 'appliance', icon: '🍳', label: 'Kitchen Appliances', desc: 'Air fryers, kettles, toasters, blenders' },
+    { value: 'electronics', icon: '💻', label: 'Electronics & Components', desc: 'PCBs, IoT devices, consumer electronics' }
+  ],
+  b2c: [
+    { value: 'insurance', icon: '🛡️', label: 'Insurance', desc: 'Life, health, property, vehicle coverage' },
+    { value: 'real_estate', icon: '🏠', label: 'Real Estate / Property', desc: 'Residential, commercial, rentals' }
+  ]
+};
+
+function selectOption(el, field) {
+  el.parentElement.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  state[field] = el.dataset.value;
+
+  const stepNum = field === 'mode' ? 1 : field === 'channel' ? 2 : 3;
+  document.getElementById(`btn${stepNum}`).disabled = false;
+
+  if (field === 'mode') buildSegments();
+}
+
+function buildSegments() {
+  const container = document.getElementById('segmentOptions');
+  const segs = SEGMENTS[state.mode] || [];
+  container.innerHTML = segs.map(s => `
+    <div class="option" data-value="${s.value}" onclick="selectOption(this,'segment')">
+      <div class="icon">${s.icon}</div>
+      <div><div class="label">${s.label}</div>
+      <div class="desc">${s.desc}</div></div>
+    </div>
+  `).join('');
+}
+
+function nextStep(n) {
+  document.getElementById(`step${n-1}`).style.display = 'none';
+  document.getElementById(`step${n}`).style.display = 'block';
+  updateDots(n);
+}
+
+function prevStep(n) {
+  document.getElementById(`step${n+1}`).style.display = 'none';
+  document.getElementById(`step${n}`).style.display = 'block';
+  updateDots(n);
+}
+
+function updateDots(active) {
+  for (let i = 1; i <= 3; i++) {
+    const dot = document.getElementById(`dot${i}`);
+    dot.className = 'step-dot' + (i === active ? ' active' : i < active ? ' done' : '');
+  }
+}
+
+async function submitDiagnostic() {
+  document.getElementById('btn3').disabled = true;
+  document.getElementById('btn3').textContent = 'Loading...';
+
+  try {
+    const res = await fetch('/api/v1/profile/diagnostic', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(state)
+    });
+    const data = await res.json();
+
+    if (data.ok) {
+      showResult(data.profile);
+    }
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+function showResult(profile) {
+  document.getElementById('step3').style.display = 'none';
+  document.querySelector('.stepper').style.display = 'none';
+
+  const panel = document.getElementById('resultPanel');
+  document.getElementById('resIcon').textContent = profile.icon;
+  document.getElementById('resTitle').textContent = profile.title;
+  document.getElementById('resTagline').textContent = profile.tagline;
+  document.getElementById('resCta').textContent = profile.cta;
+  document.getElementById('resCta').href = `/sandbox?mode=${state.mode}&segment=${state.segment}`;
+
+  const featHtml = profile.features.map(f =>
+    `<div class="feature-card"><span class="check">✓</span><span class="text">${f}</span></div>`
+  ).join('');
+  document.getElementById('resFeatures').innerHTML = featHtml;
+
+  // Apply accent color
+  document.documentElement.style.setProperty('--accent', profile.color_accent);
+  panel.classList.add('visible');
+}
+
+function showTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('codeUpload').style.display = tab === 'upload' ? 'block' : 'none';
+  document.getElementById('codeDownload').style.display = tab === 'download' ? 'block' : 'none';
+}
+
+function resetForm() {
+  state.mode = null; state.channel = null; state.segment = null;
+  document.getElementById('resultPanel').classList.remove('visible');
+  document.getElementById('resultPanel').style.display = 'none';
+  document.querySelector('.stepper').style.display = 'flex';
+  document.getElementById('step1').style.display = 'block';
+  document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+  document.querySelectorAll('.btn-primary').forEach(b => { b.disabled = true; b.textContent = b.textContent.replace('Loading...', ''); });
+  document.getElementById('btn3').textContent = 'Launch My Copilot 🚀';
+  updateDots(1);
+}
+</script>
+</body>
+</html>
